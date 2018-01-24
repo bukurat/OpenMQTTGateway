@@ -1,15 +1,15 @@
-/*  
-  OpenMQTTGateway  - ESP8266 or Arduino program for home automation 
+/*
+  OpenMQTTGateway  - ESP8266 or Arduino program for home automation
 
-   Act as a wifi or ethernet gateway between your 433mhz/infrared IR signal  and a MQTT broker 
+   Act as a wifi or ethernet gateway between your 433mhz/infrared IR signal  and a MQTT broker
    Send and receiving command by MQTT
- 
+
    This files enables to set your parameter for the bluetooth low energy gateway (beacons detection)
-  
+
     Copyright: (c)Florian ROBERT
-  
+
     This file is part of OpenMQTTGateway.
-    
+
     OpenMQTTGateway is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -27,8 +27,8 @@
 #define subjectBTtoMQTT "home/BTtoMQTT/"
 #define TimeBtw_Read 20000 //define the time between 2 scans
 #define Scan_duration 10 //define the time for a scan
-#define HM-10 
-//#define HM-11 // uncomment this line if you use HM-11 and comment the line above
+#define HM- 10   // is this supposed to be HM? not HM-
+//#define HM- 11 // uncomment this line if you use HM-11 and comment the line above
 #define ZgatewayBT_v6xx // comment if you don't have a firmware version of HM10/11 >= v601
 #define delimiter "4f4b2b444953413a"
 #define delimiter_length 16
@@ -41,7 +41,7 @@ struct decompose
   boolean reverse;
   char extract[60];
 };
-     
+
 /*-------------------PIN DEFINITIONS----------------------*/
 #ifdef ESP8266
   #define BT_RX 13 //D7 ESP8266 RX connect HM-10 or 11 TX

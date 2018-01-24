@@ -1,15 +1,15 @@
-/*  
-  OpenMQTTGateway  - ESP8266 or Arduino program for home automation 
+/*
+  OpenMQTTGateway  - ESP8266 or Arduino program for home automation
 
-   Act as a wifi or ethernet gateway between your 433mhz/infrared IR signal  and a MQTT broker 
+   Act as a wifi or ethernet gateway between your 433mhz/infrared IR signal  and a MQTT broker
    Send and receiving command by MQTT
- 
-   This files enables to set your parameter for the infrared gateway 
-  
+
+   This files enables to set your parameter for the infrared gateway
+
     Copyright: (c)Florian ROBERT
-  
+
     This file is part of OpenMQTTGateway.
-    
+
     OpenMQTTGateway is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -23,6 +23,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include "prototypes.h"
 
 /*-------------------IR topics & parameters----------------------*/
 //IR MQTT Subjects
@@ -41,7 +43,7 @@
 #define RawFrequency 38 // raw frequency sending
 
 #define pubIRunknownPrtcl false // key to avoid mqtt publication of unknown IR protocol (set to true if you want to publish unknown protocol)
-#define PanasonicAddress      0x4004     // Panasonic address (Pre data) 
+#define PanasonicAddress      0x4004     // Panasonic address (Pre data)
 #define PanasonicBits 48U // Panasonic nr of bits (Pre data)
 
 #ifdef ESP8266 //IR supported protocols on ESP8266, all supported per default
@@ -90,4 +92,3 @@
   #define IR_RECEIVER_PIN 0 // 0 = D2 on arduino
   #define IR_EMITTER_PIN 9
 #endif
-

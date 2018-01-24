@@ -1,16 +1,16 @@
-/*  
-  OpenMQTTGateway  - ESP8266 or Arduino program for home automation 
+/*
+  OpenMQTTGateway  - ESP8266 or Arduino program for home automation
 
-   Act as a wifi or ethernet gateway between your 433mhz/infrared IR signal/BLE  and a MQTT broker 
+   Act as a wifi or ethernet gateway between your 433mhz/infrared IR signal/BLE  and a MQTT broker
    Send and receiving command by MQTT
- 
+
   This gateway enables to:
  - publish MQTT data to a different topic related to BLE devices rssi signal
 
     Copyright: (c)Florian ROBERT
-  
+
     This file is part of OpenMQTTGateway.
-    
+
     OpenMQTTGateway is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -34,7 +34,10 @@ Thanks to wolass https://github.com/wolass for suggesting me HM 10 and dinosd ht
        Ported to Arduino ESP32 by Evandro Copercini
     */
     // core task implementation thanks to https://techtutorialsx.com/2017/05/09/esp32-running-code-on-a-specific-core/
-    
+    // function prototypes
+    void strupp(char* beg);
+    boolean process_miflora_data(int offset, char * rest_data, char * mac_adress);
+
     #include <BLEDevice.h>
     #include <BLEUtils.h>
     #include <BLEScan.h>
@@ -42,7 +45,7 @@ Thanks to wolass https://github.com/wolass for suggesting me HM 10 and dinosd ht
 
     //core on which the BLE detection task will run
     static int taskCore = 0;
-      
+
     class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
           void onResult(BLEAdvertisedDevice advertisedDevice) {
             String mac_adress = advertisedDevice.getAddress().toString().c_str();
@@ -62,13 +65,13 @@ Thanks to wolass https://github.com/wolass for suggesting me HM 10 and dinosd ht
                 client.publish((char *)(mactopic + "/ManufacturerData").c_str(),(char *)ManufacturerData.c_str());
             }
             if (advertisedDevice.haveRSSI()){
-              trc(F("Get RSSI "));       
+              trc(F("Get RSSI "));
               String rssi = String(advertisedDevice.getRSSI());
               trc(mactopic + " " + rssi);
               client.publish((char *)mactopic.c_str(),(char *)rssi.c_str());
             }
             if (advertisedDevice.haveTXPower()){
-              trc(F("Get TXPower "));       
+              trc(F("Get TXPower "));
               int8_t TXPower = advertisedDevice.getTXPower();
               trc(String(TXPower));
               char cTXPower[5];
@@ -85,11 +88,11 @@ Thanks to wolass https://github.com/wolass for suggesting me HM 10 and dinosd ht
                   int a = serviceData[i];
                   if (a < 16) {
                     returnedString = returnedString + "0";
-                  } 
-                  returnedString = returnedString + String(a,HEX);  
+                  }
+                  returnedString = returnedString + String(a,HEX);
                 }
                 trc(returnedString);
-                                
+
                 trc(F("Get service data UUID"));
                 BLEUUID serviceDataUUID = advertisedDevice.getServiceDataUUID();
                 trc(serviceDataUUID.toString().c_str());
@@ -101,9 +104,9 @@ Thanks to wolass https://github.com/wolass for suggesting me HM 10 and dinosd ht
                   service_data[returnedString.length()] = '\0';
                   char mac[mac_adress.length()+1];
                   mac_adress.toCharArray(mac,mac_adress.length()+1);
-                  boolean result = process_miflora_data(-22,service_data,mac); 
+                  boolean result = process_miflora_data(-22,service_data,mac);
                 }
-            } 
+            }
           }
       };
 
@@ -117,14 +120,14 @@ Thanks to wolass https://github.com/wolass for suggesting me HM 10 and dinosd ht
                           1,          /* Priority of the task */
                           NULL,       /* Task handle. */
                           taskCore);  /* Core where the task should run */
-        trc(F("ZgatewayBT ESP32 setup done "));                 
+        trc(F("ZgatewayBT ESP32 setup done "));
     }
 
     void coreTask( void * pvParameters ){
-     
+
         String taskMessage = "BT Task running on core ";
         taskMessage = taskMessage + xPortGetCoreID();
-     
+
         while(true){
             trc(taskMessage);
             delay(TimeBtw_Read);
@@ -135,7 +138,7 @@ Thanks to wolass https://github.com/wolass for suggesting me HM 10 and dinosd ht
             BLEScanResults foundDevices = pBLEScan->start(Scan_duration);
         }
     }
-      
+
   #else // arduino or ESP8266 working with HM10/11
 
 #include <SoftwareSerial.h>
@@ -166,6 +169,13 @@ void setupBT() {
 
 #ifdef ZgatewayBT_v6xx
 #define QUESTION_MSG "AT+DISA?"
+
+void strupp(char* beg)
+{
+    while (*beg = toupper(*beg))
+       ++beg;
+}
+
 boolean BTtoMQTT() {
 
   //extract serial data from module in hexa format
@@ -173,8 +183,8 @@ boolean BTtoMQTT() {
       int a = softserial.read();
       if (a < 16) {
         returnedString = returnedString + "0";
-      } 
-        returnedString = returnedString + String(a,HEX);  
+      }
+        returnedString = returnedString + String(a,HEX);
   }
 
   if (millis() > (timebt + TimeBtw_Read)) {//retriving data
@@ -200,7 +210,7 @@ boolean BTtoMQTT() {
               extract_char(token_char,d[i].extract,d[i].start, d[i].len ,d[i].reverse, false);
               if (i == 3) d[5].len = (int)strtol(d[i].extract, NULL, 16) * 2; // extracting the length of the rest data
             }
-  
+
             if((strlen(d[0].extract)) == 12) // if a mac adress is detected we publish it
             {
                 strupp(d[0].extract);
@@ -211,9 +221,9 @@ boolean BTtoMQTT() {
                 char val[12];
                 sprintf(val, "%d", rssi);
                 client.publish((char *)mactopic.c_str(),val);
-                if (strcmp(d[4].extract, "fe95") == 0) 
+                if (strcmp(d[4].extract, "fe95") == 0)
                 boolean result = process_miflora_data(0,d[5].extract,d[0].extract);
-                
+
                 return true;
             }
           }
@@ -223,16 +233,12 @@ boolean BTtoMQTT() {
       }
       softserial.print(F(QUESTION_MSG));
       return false;
-  }else{   
+  }else{
     return false;
   }
 }
 
-void strupp(char* beg)
-{
-    while (*beg = toupper(*beg))
-       ++beg;
-}
+
 
 #endif
 
@@ -277,7 +283,7 @@ boolean BTtoMQTT() {
         yield();
        #endif
        softserial.print(F(QUESTION_MSG));
-       
+
   }
   return false;
 }
@@ -285,7 +291,7 @@ boolean BTtoMQTT() {
 #endif
 
 boolean process_miflora_data(int offset, char * rest_data, char * mac_adress){
-  
+
   int data_length = 0;
   switch (rest_data[51 + offset]) {
     case '1' :
@@ -299,12 +305,12 @@ boolean process_miflora_data(int offset, char * rest_data, char * mac_adress){
         trc("can't read data_length");
     return false;
     }
-    
+
   char rev_data[data_length];
   char data[data_length];
   memcpy( rev_data, &rest_data[52 + offset], data_length );
   rev_data[data_length] = '\0';
-  
+
   // reverse data order
   revert_hex_data(rev_data, data, data_length);
   double value = strtol(data, NULL, 16);

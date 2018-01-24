@@ -542,8 +542,8 @@ void revert_hex_data(char * in, char * out, int l){
 }
 
 //trace
-{
-  if (TRACE) {
-  Serial.println(msg);
-  }
-}
+//{
+//  if (TRACE) {
+//  Serial.println(msg);
+//  }
+//}
