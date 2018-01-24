@@ -26,6 +26,10 @@
 
 Thanks to wolass https://github.com/wolass for suggesting me HM 10 and dinosd https://github.com/dinosd/BLE_PROXIMITY for inspiring me how to implement the gateway
 */
+void strupp(char* beg);
+boolean process_miflora_data(int offset, char * rest_data, char * mac_adress);
+
+
 #ifdef ZgatewayBT
 
   #ifdef ESP32
@@ -35,8 +39,7 @@ Thanks to wolass https://github.com/wolass for suggesting me HM 10 and dinosd ht
     */
     // core task implementation thanks to https://techtutorialsx.com/2017/05/09/esp32-running-code-on-a-specific-core/
     // function prototypes
-    void strupp(char* beg);
-    boolean process_miflora_data(int offset, char * rest_data, char * mac_adress);
+
 
     #include <BLEDevice.h>
     #include <BLEUtils.h>
